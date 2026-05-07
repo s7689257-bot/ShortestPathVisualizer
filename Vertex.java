@@ -33,8 +33,30 @@ public class Vertex implements Serializable {
     // ==================================================
     public Vertex(String name) {
 
-        // Assign parameter value to object variable
-        this.name = name;
+        // Exception Handling
+        // Checking null or empty vertex name
+        try {
+
+            if(name == null || name.trim().isEmpty()) {
+
+                throw new IllegalArgumentException(
+                    "Vertex name cannot be empty!"
+                );
+            }
+
+            // Assign parameter value to object variable
+            this.name = name;
+
+        }
+        catch(IllegalArgumentException ex) {
+
+            System.out.println(
+                "Exception: " + ex.getMessage()
+            );
+
+            // Default value
+            this.name = "Unknown";
+        }
     }
 
     // ==================================================
@@ -44,8 +66,53 @@ public class Vertex implements Serializable {
     // ==================================================
     public String getName() {
 
-        // Return vertex name
-        return name;
+        // Exception handling
+        try {
+
+            if(name == null) {
+
+                throw new NullPointerException(
+                    "Vertex name is null!"
+                );
+            }
+
+            // Return vertex name
+            return name;
+
+        }
+        catch(NullPointerException ex) {
+
+            System.out.println(
+                "Exception: " + ex.getMessage()
+            );
+
+            return "Invalid";
+        }
+    }
+
+    // ==================================================
+    // Setter method
+    // ==================================================
+    public void setName(String name) {
+
+        try {
+
+            if(name.length() < 1) {
+
+                throw new IllegalArgumentException(
+                    "Vertex name too short!"
+                );
+            }
+
+            this.name = name;
+
+        }
+        catch(IllegalArgumentException ex) {
+
+            System.out.println(
+                "Exception: " + ex.getMessage()
+            );
+        }
     }
 
     // ==================================================
@@ -63,9 +130,47 @@ public class Vertex implements Serializable {
     // With toString():
     // A
     // ==================================================
+    @Override
     public String toString() {
 
-        // Return vertex name as string
-        return name;
+        try {
+
+            if(name == null) {
+
+                throw new NullPointerException(
+                    "Cannot convert null name!"
+                );
+            }
+
+            // Return vertex name as string
+            return name;
+
+        }
+        catch(NullPointerException ex) {
+
+            System.out.println(
+                "Exception: " + ex.getMessage()
+            );
+
+            return "Invalid Vertex";
+        }
     }
+
+    // ==================================================
+    // Demo method for ArithmeticException
+    // ==================================================
+   public void demoException() {
+
+    try {
+
+        System.out.println(10 / 0);
+
+    }
+    catch(ArithmeticException ex) {
+
+        System.out.println(
+            "Arithmetic Exception: Cannot divide by zero!"
+        );
+    }
+}
 }
