@@ -16,140 +16,271 @@ public class Dijkstra {
         // Constructor to initialize path and distance
         public Result(List<Vertex> path, int distance) {
 
-            // Assign path received from algorithm
-            this.path = path;
+            try {
 
-            // Assign shortest distance
-            this.distance = distance;
+                // ---------------------------------------------
+                // Null path checking
+                // ---------------------------------------------
+                if(path == null) {
+
+                    throw new NullPointerException(
+                        "Path cannot be null!"
+                    );
+                }
+
+                // ---------------------------------------------
+                // Negative distance checking
+                // ---------------------------------------------
+                if(distance < 0) {
+
+                    throw new IllegalArgumentException(
+                        "Distance cannot be negative!"
+                    );
+                }
+
+                // Assign path received from algorithm
+                this.path = path;
+
+                // Assign shortest distance
+                this.distance = distance;
+
+            }
+            catch(NullPointerException ex) {
+
+                System.out.println(
+                    "Null Pointer Exception: "
+                    + ex.getMessage()
+                );
+
+                this.path = new ArrayList<>();
+            }
+            catch(IllegalArgumentException ex) {
+
+                System.out.println(
+                    "Illegal Argument Exception: "
+                    + ex.getMessage()
+                );
+
+                this.distance = 0;
+            }
         }
     }
 
     // =========================================================
     // Main Dijkstra Algorithm Method
     // =========================================================
-    public static Result getShortestPath(Graph graph, Vertex start, Vertex end) {
+    public static Result getShortestPath(Graph graph,
+                                         Vertex start,
+                                         Vertex end) {
 
-        // -----------------------------------------------------
-        // Map to store shortest distance of each vertex
-        // Key   -> Vertex
-        // Value -> Distance from source vertex
-        // -----------------------------------------------------
-        Map<Vertex, Integer> dist = new HashMap<>();
+        try {
 
-        // -----------------------------------------------------
-        // Map to store previous vertex in shortest path
-        // Used later for path reconstruction
-        // -----------------------------------------------------
-        Map<Vertex, Vertex> prev = new HashMap<>();
+            // ---------------------------------------------
+            // Null checking
+            // ---------------------------------------------
+            if(graph == null ||
+               start == null ||
+               end == null) {
 
-        // -----------------------------------------------------
-        // Initialize all vertex distances with infinity
-        // Integer.MAX_VALUE acts as infinity in Java
-        // -----------------------------------------------------
-        for (Vertex v : graph.getAdjList().keySet()) {
+                throw new NullPointerException(
+                    "Graph/Start/End cannot be null!"
+                );
+            }
 
-            // Initially every node is unreachable
-            dist.put(v, Integer.MAX_VALUE);
-        }
+            // ---------------------------------------------
+            // Empty graph checking
+            // ---------------------------------------------
+            if(graph.getAdjList().isEmpty()) {
 
-        // -----------------------------------------------------
-        // Distance of starting vertex is always 0
-        // -----------------------------------------------------
-        dist.put(start, 0);
+                throw new NoSuchElementException(
+                    "Graph is empty!"
+                );
+            }
 
-        // -----------------------------------------------------
-        // Priority Queue stores vertices based on minimum distance
-        // Vertex with smallest distance gets highest priority
-        // -----------------------------------------------------
-        PriorityQueue<Vertex> pq =
-                new PriorityQueue<>(Comparator.comparingInt(dist::get));
+            // ---------------------------------------------
+            // Map to store shortest distance
+            // ---------------------------------------------
+            Map<Vertex, Integer> dist =
+                    new HashMap<>();
 
-        // -----------------------------------------------------
-        // Add starting vertex into priority queue
-        // -----------------------------------------------------
-        pq.add(start);
+            // ---------------------------------------------
+            // Map to store previous vertex
+            // ---------------------------------------------
+            Map<Vertex, Vertex> prev =
+                    new HashMap<>();
 
-        // -----------------------------------------------------
-        // Loop continues until queue becomes empty
-        // -----------------------------------------------------
-        while (!pq.isEmpty()) {
+            // ---------------------------------------------
+            // Initialize all distances with infinity
+            // ---------------------------------------------
+            for (Vertex v :
+                    graph.getAdjList().keySet()) {
 
-            // -------------------------------------------------
-            // Remove vertex having smallest distance
-            // -------------------------------------------------
-            Vertex current = pq.poll();
+                dist.put(v, Integer.MAX_VALUE);
+            }
 
-            // -------------------------------------------------
-            // Traverse all neighboring edges of current vertex
-            // -------------------------------------------------
-            for (Edge edge : graph.getAdjList().get(current)) {
+            // ---------------------------------------------
+            // Distance of source vertex = 0
+            // ---------------------------------------------
+            dist.put(start, 0);
 
-                // ---------------------------------------------
-                // Get neighboring vertex
-                // ---------------------------------------------
-                Vertex neighbor = edge.getDestination();
+            // ---------------------------------------------
+            // Priority Queue
+            // ---------------------------------------------
+            PriorityQueue<Vertex> pq =
+                    new PriorityQueue<>(
+                            Comparator.comparingInt(
+                                    dist::get));
 
-                // ---------------------------------------------
-                // Calculate new possible distance
-                // Formula:
-                // current distance + edge weight
-                // ---------------------------------------------
-                int newDist =
-                        dist.get(current) + edge.getWeight();
+            // Add source vertex
+            pq.add(start);
 
-                // ---------------------------------------------
-                // Check if new distance is shorter
-                // than previously stored distance
-                // ---------------------------------------------
-                if (newDist < dist.get(neighbor)) {
+            // =============================================
+            // Main Algorithm Loop
+            // =============================================
+            while (!pq.isEmpty()) {
 
-                    // -----------------------------------------
-                    // Update shortest distance
-                    // -----------------------------------------
-                    dist.put(neighbor, newDist);
+                // Remove minimum distance vertex
+                Vertex current = pq.poll();
 
-                    // -----------------------------------------
-                    // Store previous node for path tracking
-                    // -----------------------------------------
-                    prev.put(neighbor, current);
+                // Traverse neighbors
+                for (Edge edge :
+                        graph.getAdjList()
+                                .get(current)) {
 
-                    // -----------------------------------------
-                    // Add updated vertex into queue
-                    // -----------------------------------------
-                    pq.add(neighbor);
+                    // Get neighbor
+                    Vertex neighbor =
+                            edge.getDestination();
+
+                    // -------------------------------------
+                    // Integer overflow checking
+                    // -------------------------------------
+                    if(dist.get(current)
+                            == Integer.MAX_VALUE) {
+
+                        continue;
+                    }
+
+                    // Calculate new distance
+                    int newDist =
+                            dist.get(current)
+                            + edge.getWeight();
+
+                    // -------------------------------------
+                    // Arithmetic checking
+                    // -------------------------------------
+                    if(newDist < 0) {
+
+                        throw new ArithmeticException(
+                            "Distance overflow occurred!"
+                        );
+                    }
+
+                    // Update shorter distance
+                    if(newDist <
+                            dist.get(neighbor)) {
+
+                        dist.put(neighbor,
+                                newDist);
+
+                        prev.put(neighbor,
+                                current);
+
+                        pq.add(neighbor);
+                    }
                 }
             }
+
+            // =============================================
+            // Path Reconstruction
+            // =============================================
+            List<Vertex> path =
+                    new ArrayList<>();
+
+            // Build reverse path
+            for (Vertex at = end;
+                 at != null;
+                 at = prev.get(at)) {
+
+                path.add(at);
+            }
+
+            // Reverse path
+            Collections.reverse(path);
+
+            // =============================================
+            // No path checking
+            // =============================================
+            if(path.isEmpty()) {
+
+                throw new Exception(
+                    "No shortest path found!"
+                );
+            }
+
+            // Return result
+            return new Result(path,
+                    dist.get(end));
+
+        }
+        catch(NullPointerException ex) {
+
+            System.out.println(
+                "Null Pointer Exception: "
+                + ex.getMessage()
+            );
+        }
+        catch(NoSuchElementException ex) {
+
+            System.out.println(
+                "No Such Element Exception: "
+                + ex.getMessage()
+            );
+        }
+        catch(ArithmeticException ex) {
+
+            System.out.println(
+                "Arithmetic Exception: "
+                + ex.getMessage()
+            );
+        }
+        catch(IllegalArgumentException ex) {
+
+            System.out.println(
+                "Illegal Argument Exception: "
+                + ex.getMessage()
+            );
+        }
+        catch(Exception ex) {
+
+            System.out.println(
+                "General Exception: "
+                + ex.getMessage()
+            );
         }
 
-        // =====================================================
-        // Path Reconstruction Section
-        // =====================================================
+        // Return default result if exception occurs
+        return new Result(
+                new ArrayList<>(),
+                0
+        );
+    }
 
-        // Create list to store shortest path
-        List<Vertex> path = new ArrayList<>();
+    // =========================================================
+    // Demo method for exception handling
+    // =========================================================
+    public static void demoException() {
 
-        // -----------------------------------------------------
-        // Start from destination vertex
-        // Move backwards using prev map
-        // -----------------------------------------------------
-        for (Vertex at = end; at != null; at = prev.get(at)) {
+        try {
 
-            // Add vertex into path list
-            path.add(at);
+            System.out.println(100 / 0);
+
         }
+        catch(ArithmeticException ex) {
 
-        // -----------------------------------------------------
-        // Reverse list because currently path is backwards
-        // Example:
-        // D -> C -> B -> A
-        // becomes:
-        // A -> B -> C -> D
-        // -----------------------------------------------------
-        Collections.reverse(path);
-
-        // =====================================================
-        // Return final shortest path and total distance
-        // =====================================================
-        return new Result(path, dist.get(end));
+            System.out.println(
+                "Arithmetic Exception: "
+                + "Division by zero!"
+            );
+        }
     }
 }
